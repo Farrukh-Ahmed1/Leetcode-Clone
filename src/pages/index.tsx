@@ -1,6 +1,8 @@
 import { Inter } from "next/font/google";
 import Topbar from "@/components/Topbar/Topbar";
 import ProblemsTable from "@/components/ProblemsTable/ProblemsTable";
+import React from "react";
+import Link from "next/link";
 
 const inter = Inter({ subsets: ["latin"] });
 
