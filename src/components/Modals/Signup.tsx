@@ -5,6 +5,7 @@ import { useSetRecoilState } from "recoil";
 import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import { toast } from "react-toastify";
 
 type SignupProps = {};
 
@@ -20,13 +21,18 @@ const Signup: React.FC<SignupProps> = () => {
     password: "",
   });
   const [createUserWithEmailAndPassword, user, loading, error] = useCreateUserWithEmailAndPassword(auth);
-  
+
   const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
   const router = useRouter();
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-    if(!input.email || !input.password || !input.displayName) return alert("Please fill all the fields");
+    if(!input.email || !input.password || !input.displayName) 
+    return toast.error("Please fill all the fields", {
+      position: "top-center",
+      autoClose: 3000,
+      theme: "dark",
+    });;
     e.preventDefault();
     try {
       const newUser = await createUserWithEmailAndPassword(input.email, input.password);
@@ -34,12 +40,22 @@ const Signup: React.FC<SignupProps> = () => {
       router.push("/");
       
     } catch (error: any) {
-      console.log(error.message);
+      toast.error(error.message, {
+        position: "top-center",
+        autoClose: 3000,
+        theme: "dark",
+      });
       
     }
   };
   useEffect(() => {
-    if(error) alert(error.message);
+    if (error) {
+      toast.error(error.message, {
+        position: "top-center",
+        autoClose: 3000,
+        theme: "dark",
+      });
+    }
   }, [error]);
 
   return (

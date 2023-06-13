@@ -4,6 +4,8 @@ import { useRouter } from "next/router";
 import React from "react";
 import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { useSetRecoilState } from "recoil";
+import { toast } from "react-toastify";
+import { useEffect } from "react";
 
 type LoginProps = {};
 
@@ -22,7 +24,11 @@ const Login: React.FC<LoginProps> = () => {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!input.email || !input.password)
-      return alert("Please fill all the fields");
+      return toast.error("Please fill all the fields", {
+        position: "top-center",
+        autoClose: 3000,
+        theme: "dark",
+      });
     try {
       const newUser = await signInWithEmailAndPassword(
         input.email,
@@ -34,6 +40,15 @@ const Login: React.FC<LoginProps> = () => {
       alert(error.message);
     }
   };
+  useEffect(() => {
+    if (error) {
+      toast.error(error.message, {
+        position: "top-center",
+        autoClose: 3000,
+        theme: "dark",
+      });
+    }
+  }, [error]);
   return (
     <form className="space-y-6 px-6 py-6" onSubmit={handleLogin}>
       <h3 className="text-xl font-medium text-white">Sign In to Leet Clone</h3>

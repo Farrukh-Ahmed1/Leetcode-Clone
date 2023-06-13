@@ -27,8 +27,9 @@ const AuthPage:React.FC<AuthPageProps> = () => {
             <div className='bg-gradient-to-t from-gray-950 to to-gray-900 h-screen relative'>
                 <div className="max-w-7xl mx-auto">
                     <Navbar/>
-                    <div className='flex items-center justify-center h-[calc(100vh-5rem)] pointer-events-none select-none'>
-                        <Image src="/hero.png" alt="" />
+                    <div className='flex items-center justify-center h-[calc(100vh-5rem)] 
+                    pointer-events-none select-none'>
+                        <Image src="/hero.png" alt="Main Image" width={700} height={700}/>
                     </div>
                     {authModal.isOpen && <AuthModal/>}
                 </div>
