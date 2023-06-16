@@ -1,11 +1,12 @@
 import { authModalState } from "@/atoms/authModalAtom";
-import { auth } from "@/firebase/firebase";
+import { auth, firestore } from "@/firebase/firebase";
 import React from "react";
 import { useSetRecoilState } from "recoil";
 import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
+import { doc, setDoc } from "firebase/firestore";
 
 type SignupProps = {};
 
@@ -14,38 +15,61 @@ const Signup: React.FC<SignupProps> = () => {
   const handleClick = () => {
     setAuthModalState((prev) => ({ ...prev, type: "login" }));
   };
- 
+
   const [input, setInput] = React.useState({
     email: "",
     displayName: "",
     password: "",
   });
-  const [createUserWithEmailAndPassword, user, loading, error] = useCreateUserWithEmailAndPassword(auth);
+  const [createUserWithEmailAndPassword, user, loading, error] =
+    useCreateUserWithEmailAndPassword(auth);
 
   const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
   const router = useRouter();
+
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-    if(!input.email || !input.password || !input.displayName) 
-    return toast.error("Please fill all the fields", {
-      position: "top-center",
-      autoClose: 3000,
-      theme: "dark",
-    });;
+    if (!input.email || !input.password || !input.displayName)
+      return toast.error("Please fill all the fields", {
+        position: "top-center",
+        autoClose: 3000,
+        theme: "dark",
+      });
     e.preventDefault();
     try {
-      const newUser = await createUserWithEmailAndPassword(input.email, input.password);
-      if(!newUser) return;
+      toast.loading("Creating your account", {
+        position: "top-center",
+        theme: "dark",
+        autoClose: 3000,
+        toastId: "loadingToast",
+      });
+      const newUser = await createUserWithEmailAndPassword(
+        input.email,
+        input.password
+      );
+      if (!newUser) return;
+      const userData = {
+        uid: newUser.user.uid,
+        email: newUser.user.email,
+        displayName: input.displayName,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        likedProblems: [],
+        disLikedProblems: [],
+        solvedProblems: [],
+        starredProblems: [],
+      };
+      await setDoc(doc(firestore, "users", newUser.user.uid), userData);
       router.push("/");
-      
     } catch (error: any) {
       toast.error(error.message, {
         position: "top-center",
         autoClose: 3000,
         theme: "dark",
       });
-      
+    } finally {
+      toast.dismiss("loadingToast");
     }
   };
   useEffect(() => {
@@ -123,7 +147,6 @@ const Signup: React.FC<SignupProps> = () => {
         className="w-full text-white focus:ring-blue-700 
             font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-brand-orange
             hover:bg-brand-orange-s"
-            
       >
         {loading ? "Registering..." : "Signup"}
       </button>

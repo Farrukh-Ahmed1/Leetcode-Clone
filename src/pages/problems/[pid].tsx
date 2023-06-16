@@ -1,18 +1,51 @@
-import Topbar from '@/components/Topbar/Topbar';
-import Workspace from '@/components/WorkSpace/Workspace';
-import React from 'react';
+import Topbar from "@/components/Topbar/Topbar";
+import Workspace from "@/components/WorkSpace/Workspace";
+import { problems } from "@/utils/problems";
+import React from "react";
+import { Problem } from "@/utils/types/problem";
+import useHasMounted from "@/hooks/useHasMounted";
 
-type ProblemPageProps = {
+type ProblemPageProps = {problem: Problem};
+
+const ProblemPage: React.FC<ProblemPageProps> = ({problem}) => {
+  const hasMounted = useHasMounted();
+  if (!hasMounted) return null;
     
+  return (
+    <div>
+      <Topbar problemPage />
+      <Workspace problem={problem} />
+    </div>
+  );
 };
-
-const ProblemPage:React.FC<ProblemPageProps> = () => {
-    
-    return (
-        <div>
-            <Topbar problemPage/>
-            <Workspace/>
-        </div>
-    )
-}
 export default ProblemPage;
+
+//Fetch The Local Data with SSG (Static Site Generation)
+
+export async function getStaticPaths() {
+  const paths = Object.keys(problems).map((key) => ({
+    params: { pid: key },
+  }));
+  return {
+    paths,
+    fallback: false,
+  };
+}
+
+// getStaticProps, it'll fecth data
+
+export async function getStaticProps({ params }: { params: { pid: string } }) {
+  const { pid } = params;
+  const problem = problems[pid];
+  if (!problem) {
+    return {
+      notFound: true,
+    };
+  }
+  problem.handlerFunction = problem.handlerFunction.toString();
+  return {
+    props: {
+      problem,
+    },
+  };
+}

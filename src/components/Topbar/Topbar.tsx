@@ -9,6 +9,8 @@ import { authModalState } from "@/atoms/authModalAtom";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { BsList } from "react-icons/bs";
 import Timer from "../Timer/Timer";
+import { useRouter } from "next/router";
+import { problems } from "@/utils/problems";
 
 type TopbarProps = {
   problemPage?: boolean;
@@ -17,6 +19,26 @@ type TopbarProps = {
 const Topbar: React.FC<TopbarProps> = ({ problemPage }) => {
   const [user] = useAuthState(auth);
   const setAuthModalState = useSetRecoilState(authModalState);
+  const router = useRouter();
+
+  const handleProblemChange = (isForward: boolean) => {
+		const { order } = problems[router.query.pid as string] ;
+		const direction = isForward ? 1 : -1;
+		const nextProblemOrder = order + direction;
+		const nextProblemKey = Object.keys(problems).find((key) => problems[key].order === nextProblemOrder);
+
+		if (isForward && !nextProblemKey) {
+			const firstProblemKey = Object.keys(problems).find((key) => problems[key].order === 1);
+			router.push(`/problems/${firstProblemKey}`);
+		} else if (!isForward && !nextProblemKey) {
+			const lastProblemKey = Object.keys(problems).find(
+				(key) => problems[key].order === Object.keys(problems).length
+			);
+			router.push(`/problems/${lastProblemKey}`);
+		} else {
+			router.push(`/problems/${nextProblemKey}`);
+		}
+	};
   return (
     <nav
       className="relative flex h-[50px] w-full shrink-0 items-center 
@@ -34,6 +56,7 @@ const Topbar: React.FC<TopbarProps> = ({ problemPage }) => {
             <div
               className="flex items-center justify-center rounded bg-dark-fill-3
             hover:bg-dark-fill-2 h-8 w-8 cursor-pointer"
+            onClick={() => handleProblemChange(false)}
             >
               <FaChevronLeft />
             </div>
@@ -50,6 +73,7 @@ const Topbar: React.FC<TopbarProps> = ({ problemPage }) => {
             <div
               className="flex items-center justify-center rounded bg-dark-fill-3
             hover:bg-dark-fill-2 h-8 w-8 cursor-pointer"
+            onClick={() => handleProblemChange(true)}
             >
               <FaChevronRight />
             </div>
@@ -66,7 +90,7 @@ const Topbar: React.FC<TopbarProps> = ({ problemPage }) => {
               Premium
             </a>
           </div>
-          {problemPage && <Timer/>}
+          {user && problemPage && <Timer/>}
           {!user && (
             <Link href="/auth">
               <button
